@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script>
+        function sendOtp() {
+    const formData = new FormData(document.getElementById('signupForm'));
+
+    fetch("{{ url_for('send_otp') }}", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('otpSection').style.display = 'block';
+            document.getElementById('signupSection').style.display = 'none';
+            alert(data.message);
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function verifyOtp(event) {
+    event.preventDefault();
+    const otp = document.getElementById('otp').value;
+    console.log('Entered OTP:', otp);  // Debugging statement
+
+    fetch("{{ url_for('verify_otp') }}", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ otp: otp })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response from server:', data);  // Debugging statement
+        if (data.success) {
+            window.location.href = "{{ url_for('login') }}";
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
+    </script>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('about') }}">About Us</a></li>
+                <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+                {% if 'user_id' in session %}
+                    <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('signup') }}">Sign Up</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="auth-container">
+            <h2>Sign Up</h2>
+
+            <!-- Signup Section -->
+            <div id="signupSection">
+                <form id="signupForm">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                    <label for="confirm_password">Confirm Password:</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                    <button type="button" onclick="sendOtp()">Send OTP</button>
+                </form>
+            </div>
+
+            <!-- OTP Verification Section -->
+            <div id="otpSection" style="display:none;">
+                <form id="otpForm" onsubmit="verifyOtp(event)">
+                    <label for="otp">Enter OTP:</label>
+                    <input type="text" id="otp" name="otp" required>
+                    <button type="submit">Verify OTP</button>
+                </form>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Professional Website. All rights reserved.</p>
+    </footer>   
+</body>
+</html>

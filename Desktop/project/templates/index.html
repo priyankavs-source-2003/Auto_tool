@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('about') }}">About</a></li>
+                <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+                {% if 'user_id' in session %}
+                    <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('signup') }}">Sign Up</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <h1>Welcome to Our Professional Website</h1>
+            <p>Your go-to platform for code correctness, problem-solving, and more.</p>
+        </section>
+        <section class="features">
+            <div class="feature">
+                <img src="{{ url_for('static', filename='images/img1.jpg') }}" alt="Code Correctness">
+                <h2>Code Correctness</h2>
+                <p>Check and correct your code snippets with AI.</p>
+                <a href="{{ url_for('code_correctness') }}" class="feature-button">Learn More</a>
+            </div>
+            <div class="feature">
+                <img src="{{ url_for('static', filename='images/img2.jpg') }}" alt="Problem Solving">
+                <h2>Problem Solving</h2>
+                <p>Get solutions to your coding problems.</p>
+                <a href="{{ url_for('question_selector') }}" class="feature-button">Learn More</a>
+            </div>
+            <div class="feature">
+                <img src="{{ url_for('static', filename='images/img3.jpg') }}" alt="Play Game">
+                <h2>Play Game</h2>
+                <p>Take a break and play some fun games.</p>
+                <a href="{{ url_for('game') }}" class="feature-button">Learn More</a>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Professional Website. All rights reserved.</p>
+    </footer>
+</body>
+</html>

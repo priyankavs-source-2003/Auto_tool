@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Correctness</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Engravers MT', serif;
+            background: url("{{ url_for('static', filename='images/code_back.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .container {
+            font-size: 48px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            position: absolute;
+            top: 20%;
+        }
+
+        .typed-text {
+            display: block; /* Ensure each line is on a new line */
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 3px solid;
+            animation: typing-hello 4s steps(15, end), blink-caret 0.75s step-end infinite;
+            font-size: 70px;
+        }
+
+        .typed-text-small {
+            display: block; /* Ensure each line is on a new line */
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 3px solid;
+            animation: typing-small 4s steps(40, end) 4s forwards, blink-caret 0.75s step-end infinite;
+            font-size: 30px;
+            margin-top: -160px; /* Move the text up */
+        }
+
+        @keyframes typing-hello {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes typing-small {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: white; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="typed-text">HELLO PROGRAMMER</div>
+        <div class="typed-text-small">We are dedicated to helping you improve your code.</div>
+    </div>
+</body>
+</html>

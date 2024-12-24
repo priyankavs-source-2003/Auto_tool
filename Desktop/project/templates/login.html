@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 60px);
+        }
+        .auth-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        .auth-container h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .auth-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .auth-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .auth-container button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .auth-container button:hover {
+            background-color: #0056b3;
+        }
+        footer {
+            text-align: center;
+            padding: 10px;
+            background: #333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Login</h1>
+    </header>
+    <main>
+        <section class="auth-container">
+            <h2>Login</h2>
+            <form id="login-form">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+                <button type="button" onclick="login()">Login</button>
+            </form>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Professional Website. All rights reserved.</p>
+    </footer>
+    <script>
+        // Mock credentials for both admin and users
+        const ADMIN_EMAIL = "admin@example.com";
+        const ADMIN_PASSWORD = "admin123";
+
+        const USER_CREDENTIALS = [
+            { email: "user1@example.com", password: "user123" },
+            { email: "user2@example.com", password: "user456" }
+        ];
+
+        function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    // Check admin credentials
+    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+        window.location.href = "/admin_dashboard"; // Redirect to admin route
+        return;
+    }
+
+    // Check user credentials
+    const isUser = USER_CREDENTIALS.some(
+        user => user.email === email && user.password === password
+    );
+
+    if (isUser) {
+        window.location.href = "/question_selector"; // Redirect to user route
+    } else {
+        alert("Invalid email or password!");
+    }
+}
+
+    </script>
+</body>
+</html>

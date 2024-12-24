@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Info Page</title>
+    <style>
+        /* General reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Header Section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 10px 20px;
+        }
+
+        .logo img {
+            height: 50px;
+            width: auto;
+        }
+
+        .navigation button,
+        .auth-buttons button {
+            margin: 0 5px;
+            padding: 10px 15px;
+            background-color: #3498db;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .navigation button:hover,
+        .auth-buttons button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Content Section */
+        .content {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .content h1 {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .scrollable-description {
+            margin: 0 auto;
+            max-width: 600px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 15px;
+            text-align: justify;
+            background-color: #f9f9f9;
+            animation: scroll 10s linear infinite;
+        }
+
+        /* Scroll animation */
+        @keyframes scroll {
+            from {
+                scroll-behavior: smooth;
+            }
+            to {
+                scroll-behavior: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <!-- Logo -->
+        <div class="logo">
+            <img src="static/images/logo.png" alt="Logo">
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button onclick="location.href='/Home'">Home</button>
+            <button onclick="location.href='/about'">About</button>
+            <button onclick="location.href='/Services'">Services</button>
+        </div>
+
+        <!-- Login/Signup -->
+        <div class="auth-buttons">
+            <button onclick="location.href='/login'">Login</button>
+            <button onclick="location.href='/signup'">Signup</button>
+        </div>
+    </div>
+
+    <div class="content">
+        <h1>Welcome to Automated Tool To Assist Programmer</h1>
+        <div class="scrollable-description">
+            <p>
+                The "Automated Tool to Assist the Programmers" is a comprehensive platform designed 
+                to support programmers by enhancing code correctness, problem-solving, and skill-
+                building through interactive games. The tool offers syntax error correction for multiple 
+                programming languages, focusing on Python, and provides advanced problem-solving 
+                features such as automated question generation and test case validation, with a tagging 
+                system to streamline search and prevent duplicates. User-submitted solutions are 
+                verified against predefined or AI-generated test cases to ensure reliable accuracy. In 
+                addition, the platform includes real-time multiplayer gaming options, such as a Quiz 
+                Game to test programming knowledge and a Code Challenge for competitive coding, 
+                fostering collaborative learning and reinforcing technical skills. Together, these features 
+                create a dynamic environment that streamlines debugging, supports scalable problem 
+                generation, and encourages a productive, interactive learning experience for 
+                programmers at all levels.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

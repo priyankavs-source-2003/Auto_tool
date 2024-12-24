@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Tool to Assist Programmers</title>
+    <style>
+        /* General styling for the body */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #011437, #aea5e0); /* Gradient background */
+            color: #fff; /* Default text color */
+            overflow: hidden;
+        }
+
+        /* Logo styling */
+        .logo-container {
+            width: 350px;
+            height: 300px;
+            margin-bottom: 30px;
+            background-image: url('/static/images/logo.png'); /* Path to the logo */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0;
+            transform: scale(0.8); /* Start with smaller scale */
+            animation: logoAnimation 4s ease-in-out forwards; /* Animation for scaling and fade-in */
+        }
+
+        /* Title styling */
+        .title {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #C0C0C0; /* Silver text color */
+            opacity: 0;
+            transform: translateY(20px); /* Initial position for animation */
+            animation: titleAnimation 3s ease-in-out forwards 4s; /* Fade-in with delay */
+        }
+
+        /* Slogan styling */
+        .slogan {
+            font-size: 1.8em;
+            font-style: italic;
+            color: #FFD700; /* Golden text color */
+            opacity: 0;
+            transform: translateY(20px); /* Initial position for animation */
+            animation: sloganAnimation 3s ease-in-out forwards 5s; /* Fade-in with delay */
+        }
+
+        /* Animation keyframes */
+        @keyframes logoAnimation {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes titleAnimation {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes sloganAnimation {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo -->
+    <div class="logo-container"></div>
+
+    <!-- Title -->
+    <div class="title">Automated Tool to Assist Programmers</div>
+
+    <!-- Slogan -->
+    <div class="slogan">Declare Variables Instead of War</div>
+
+    <!-- Redirect to Home page after animation -->
+    <script>
+        setTimeout(function() {
+            window.location.href = '/info'; // Redirect to the home page
+        }, 8000); // Redirect after 8 seconds to match animation duration
+    </script>
+</body>
+</html>

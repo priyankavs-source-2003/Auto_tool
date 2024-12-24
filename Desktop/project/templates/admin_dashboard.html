@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        main {
+            padding: 20px;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .form-container h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-container label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+        .form-container input,
+        .form-container textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-container button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Admin Dashboard</h1>
+    </header>
+    <main>
+        <div class="form-container">
+            <h2>Add a New Problem</h2>
+            <form id="add-problem-form">
+                <label for="title">Problem Title:</label>
+                <input type="text" id="title" name="title" required>
+
+                <label for="description">Problem Description:</label>
+                <textarea id="description" name="description" required></textarea>
+
+                <label for="test-cases">Test Cases (JSON format):</label>
+                <textarea id="test-cases" name="test-cases" placeholder='[{"input": "2", "output": "4"}]' required></textarea>
+
+                <button type="button" onclick="addProblem()">Add Problem</button>
+            </form>
+        </div>
+    </main>
+    <script>
+        async function addProblem() {
+            const title = document.getElementById("title").value;
+            const description = document.getElementById("description").value;
+            const testCases = document.getElementById("test-cases").value;
+
+            try {
+                const response = await fetch("/add_problem", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ title, description, testCases }),
+                });
+
+                if (response.ok) {
+                    alert("Problem added successfully!");
+                    document.getElementById("add-problem-form").reset();
+                } else {
+                    alert("Failed to add problem.");
+                }
+            } catch (error) {
+                console.error("Error adding problem:", error);
+                alert("An error occurred. Please try again.");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Question</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Select a Question</h1>
+        <form method="get" action="{{ url_for('question_selector') }}">
+            <label for="language">Language:</label>
+            <select id="language" name="language">
+                <option value="Python">Python</option>
+                <option value="C">C</option>
+                <option value="C++">C++</option>
+                <option value="Java">Java</option>
+            </select>
+
+            <label for="topic">Topic:</label>
+            <select id="topic" name="topic">
+                <option value="Arrays">Arrays</option>
+                <option value="Loops">Loops</option>
+                <option value="Stacks">Stacks</option>
+                <option value="Queues">Queues</option>
+            </select>
+
+            <button type="submit">Filter</button>
+        </form>
+    </header>
+
+    <main>
+        <table>
+            <thead>
+                <tr>
+                    <th>Question</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if questions %}
+                    {% for question in questions %}
+                    <tr>
+                        <td>{{ question.title }}</td> <!-- Displaying 'title' from the question -->
+                        <td>{{ question.type }}</td> <!-- Displaying 'type' from the question -->
+                        <td>{{ question.status }}</td> <!-- Displaying 'status' from the question -->
+                        <td>
+                            <!-- Link to the coding environment page with the question_id -->
+                            <a href="{{ url_for('coding_environment', question_id=question.id) }}" class="solve-button">Solve</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4">No questions available for the selected filters.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>
