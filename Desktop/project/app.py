@@ -642,3 +642,9 @@ if __name__ == '__main__':
     create_table()
     seed_db()
     app.run(debug=True)
+
+
+
+
+
+Hello vs ghost movie
