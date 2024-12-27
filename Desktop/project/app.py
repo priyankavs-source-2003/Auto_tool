@@ -584,10 +584,15 @@ def code_correctness():
     
     if request.method == 'POST':
         input_code = request.form['inputCode']
+    else:
+        input_code = request.json.get('inputCode')
         
         # Call the Gemini API
-        api_url = 'https://api.example.com/correct_code'  # Replace with actual Gemini API endpoint
-        headers = {'Authorization': 'Bearer YOUR_API_KEY', 'Content-Type': 'application/json'}
+        api_url = 'https://api.gemini.com/v1/correct_code'  # Replace with actual Gemini API endpoint
+        headers = {
+            'Authorization': f'Bearer {GEMINI_API_KEY}',
+            'Content-Type': 'application/json'
+        }
         payload = {'input_code': input_code}
         
         response = requests.post(api_url, headers=headers, json=payload)
@@ -601,14 +606,18 @@ def code_correctness():
     
     return render_template('code_correctness.html')
 
+
 @app.route('/api/correct_code', methods=['POST'])
 def api_correct_code():
     data = request.json
     input_code = data.get('input_code')
     
     # Call the Gemini API
-    api_url = 'https://api.example.com/correct_code'  # Replace with actual Gemini API endpoint
-    headers = {'Authorization': 'Bearer YOUR_API_KEY', 'Content-Type': 'application/json'}
+    api_url = 'https://api.gemini.com/v1/correct_code'  # Replace with actual Gemini API endpoint
+    headers = {
+        'Authorization': f'Bearer {GEMINI_API_KEY}',
+        'Content-Type': 'application/json'
+    }
     payload = {'input_code': input_code}
     
     response = requests.post(api_url, headers=headers, json=payload)
