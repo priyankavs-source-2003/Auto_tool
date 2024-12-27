@@ -1,16 +1,17 @@
-from flask import Flask, json, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, json, render_template, request,requests, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from code_corrector import correct_code
 import sqlite3
 import os
 import random
 from flask_mail import Mail, Message
 import mysql.connector
 import subprocess
-
+from dotenv import load_dotenv
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
+load_dotenv()
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 # Configure Flask-Mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -583,7 +584,19 @@ def code_correctness():
     
     if request.method == 'POST':
         input_code = request.form['inputCode']
-        corrected_code_result = correct_code(input_code)  # Correcting the code using your logic
+        
+        # Call the Gemini API
+        api_url = 'https://api.example.com/correct_code'  # Replace with actual Gemini API endpoint
+        headers = {'Authorization': 'Bearer YOUR_API_KEY', 'Content-Type': 'application/json'}
+        payload = {'input_code': input_code}
+        
+        response = requests.post(api_url, headers=headers, json=payload)
+        
+        if response.status_code == 200:
+            corrected_code_result = response.json().get('corrected_code', '')
+        else:
+            corrected_code_result = "Error correcting code. Please try again later."
+        
         return render_template('code_correctness.html', corrected_code=corrected_code_result)
     
     return render_template('code_correctness.html')
@@ -593,20 +606,17 @@ def api_correct_code():
     data = request.json
     input_code = data.get('input_code')
     
-    # Split the input code into lines
-    lines = input_code.splitlines()
+    # Call the Gemini API
+    api_url = 'https://api.example.com/correct_code'  # Replace with actual Gemini API endpoint
+    headers = {'Authorization': 'Bearer YOUR_API_KEY', 'Content-Type': 'application/json'}
+    payload = {'input_code': input_code}
     
-    # Correct each line individually while preserving indentation
-    corrected_lines = []
-    for line in lines:
-        # Preserve leading whitespace
-        leading_whitespace = len(line) - len(line.lstrip())
-        corrected_line = correct_code(line.lstrip())
-        corrected_line_with_indent = ' ' * leading_whitespace + corrected_line
-        corrected_lines.append(corrected_line_with_indent)
+    response = requests.post(api_url, headers=headers, json=payload)
     
-    # Join the corrected lines back into a single string with newline characters
-    corrected_code = '\n'.join(corrected_lines)
+    if response.status_code == 200:
+        corrected_code = response.json().get('corrected_code', '')
+    else:
+        corrected_code = "Error correcting code. Please try again later."
     
     return jsonify({'corrected_code': corrected_code})
 
@@ -642,9 +652,3 @@ if __name__ == '__main__':
     create_table()
     seed_db()
     app.run(debug=True)
-
-
-
-
-
-Hello vs ghost movie
