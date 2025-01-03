@@ -1,4 +1,4 @@
-from flask import Flask, json, render_template, request,requests, redirect, url_for, flash, session, jsonify
+from flask import Flask, json, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import sqlite3
@@ -7,8 +7,11 @@ import random
 from flask_mail import Mail, Message
 import mysql.connector
 import subprocess
+import requests
 from dotenv import load_dotenv
+from flask_cors import CORS
 app = Flask(__name__)
+CORS(app)
 app.secret_key = 'supersecretkey'
 load_dotenv()
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
@@ -17,8 +20,8 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', 'default_username@gmail.com')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', 'default_password')
+app.config['MAIL_USERNAME'] = 'priyankapri425@gmail.com'
+app.config['MAIL_PASSWORD'] = 'vyce qukn sqts zugn'
 app.config['MAIL_DEFAULT_SENDER'] = 'ATAP@gmail.com'
 mail = Mail(app)
 
@@ -36,8 +39,8 @@ if not os.path.exists(UPLOAD_FOLDER):
 mysql_config = {
     'host': 'localhost',
     'database': 'project_db',
-    'user': 'priya',
-    'password': 'priyanka@1234'
+    'user': 'root',
+    'password': 'Priya@2003'
 }
 
 # Database connection
@@ -71,6 +74,34 @@ def execute_query(query, params=None):
     finally:
         cursor.close()
         conn.close()
+@app.route('/code_correctness', methods=['GET', 'POST'])
+def code_correctness():
+    if 'user_id' not in session:
+        flash('Please log in to access this page.')
+        return redirect(url_for('login'))
+
+    corrected_code_result = None  # Default value if no code is submitted
+
+    if request.method == 'POST':
+        # Get the input code from the form
+        input_code = request.form.get('input_code')
+
+        # Call the Gemini API
+        api_url = 'https://api.gemini.com/v1/correct_code'  # Replace with the actual Gemini API endpoint
+        headers = {
+            'Authorization': f'Bearer {GEMINI_API_KEY}',
+            'Content-Type': 'application/json'
+        }
+        payload = {'input_code': input_code}
+
+        response = requests.post(api_url, headers=headers, json=payload)
+
+        if response.status_code == 200:
+            corrected_code_result = response.json().get('corrected_code', '')
+        else:
+            corrected_code_result = "Error correcting code. Please try again later."
+
+    return render_template('code_correctness.html', corrected_code=corrected_code_result)
 
 
 def allowed_file(filename):
@@ -127,7 +158,6 @@ if conn:
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users")
     results = cursor.fetchall()
-    print(results)
     cursor.close()
     conn.close()
 else:
@@ -218,10 +248,6 @@ def create_table():
 def splash():
     return render_template('splash.html')
 
-@app.route('/info')
-def info():
-    return render_template('info.html')
-
 @app.route('/Home')
 def index():
     return render_template('index.html')
@@ -230,10 +256,7 @@ def index():
 def about():
     return render_template('about.html')
 
-# Route for services page
-@app.route('/Services')
-def services():
-    return "Services Page Coming Soon"
+
 
 
 def send_email(to_email, subject, message):
@@ -266,33 +289,51 @@ def profile():
     
     conn = get_db_connection()
     if conn is not None:
-        user = conn.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-        
-        if request.method == 'POST':
-            college = request.form.get('college', '')
-            phone_number = request.form.get('phone_number', '')
+        cursor = conn.cursor(dictionary=True)  # Use dictionary cursor for easier access to columns by name
+        try:
+            # Fetch user details from the database
+            cursor.execute('SELECT * FROM users WHERE id = %s', (session['user_id'],))
+            user = cursor.fetchone()
 
-            # Handle profile photo upload
-            profile_photo = request.files.get('profile_photo')
-            if profile_photo and allowed_file(profile_photo.filename):
-                filename = secure_filename(profile_photo.filename)
-                profile_photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                profile_photo_path = filename
-            else:
-                profile_photo_path = user['profile_photo']  # Accessing directly instead of using get()
+            if not user:
+                flash('User not found.')
+                return redirect(url_for('login'))
 
-            conn.execute('''
-                UPDATE users
-                SET college = ?, phone_number = ?, profile_photo = ?
-                WHERE id = ?
-            ''', (college, phone_number, profile_photo_path, session['user_id']))
-            conn.commit()
-            flash('Profile updated successfully!')
-            return redirect(url_for('profile'))
-        return render_template('profile.html', user=user)
+            if request.method == 'POST':
+                college = request.form.get('college', '')
+                phone_number = request.form.get('phone_number', '')
+
+                # Handle profile photo upload
+                profile_photo = request.files.get('profile_photo')
+                if profile_photo and allowed_file(profile_photo.filename):
+                    filename = secure_filename(profile_photo.filename)
+                    profile_photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    profile_photo_path = filename
+                else:
+                    profile_photo_path = user['profile_photo']  # Keep existing photo if not updated
+
+                # Update user details in the database
+                cursor.execute('''
+                    UPDATE users
+                    SET college = %s, phone_number = %s, profile_photo = %s
+                    WHERE id = %s
+                ''', (college, phone_number, profile_photo_path, session['user_id']))
+                conn.commit()
+                flash('Profile updated successfully!')
+                return redirect(url_for('profile'))
+
+            return render_template('profile.html', user=user)
+
+        except Exception as e:
+            flash(f'Error: {e}')
+            return redirect(url_for('index'))
+        finally:
+            cursor.close()
+            conn.close()
     else:
         flash('Database connection error.')
         return redirect(url_for('index'))
+
 
 @app.route('/update_profile_photo', methods=['POST'])
 def update_profile_photo():
@@ -392,10 +433,11 @@ def signup():
         if conn:
             cursor = conn.cursor()
             try:
-                cursor.execute('''
-                    INSERT INTO users (username, email, password)
-                    VALUES (%s, %s, %s)
-                ''', (username, email, hashed_password))
+                cursor.execute(
+    'INSERT INTO users (username, email, password) VALUES (%s, %s, %s)',
+    (username, email, hashed_password)
+)
+
                 conn.commit()
                 flash('Signup successful!')
                 return redirect(url_for('login'))
@@ -411,7 +453,6 @@ def signup():
 
 @app.route('/verify_otp', methods=['POST'])
 def verify_otp():
-    # Check if the request is JSON
     if request.is_json:
         otp_input = request.json.get('otp')
     else:
@@ -419,13 +460,9 @@ def verify_otp():
 
     stored_otp = session.get('otp')
 
-    print(f"Entered OTP: {otp_input}")
-    print(f"Stored OTP: {stored_otp}")
-
     if otp_input is None:
         return jsonify({'success': False, 'message': 'No OTP provided!'})
 
-    # Ensure both are integers for comparison
     if stored_otp is not None and int(otp_input) == int(stored_otp):
         username = session.pop('username', None)
         email = session.pop('email', None)
@@ -437,16 +474,23 @@ def verify_otp():
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
 
         conn = get_db_connection()
-        try:
-            conn.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-                         (username, email, hashed_password))
-            conn.commit()
-            session.pop('otp', None)  # Clear OTP after successful verification
-            return jsonify({'success': True, 'message': 'Sign up successful!'})
-        except sqlite3.IntegrityError:
-            return jsonify({'success': False, 'message': 'Username or email already exists!'})
-        finally:
-            conn.close()
+        if conn:
+            curr = conn.cursor()
+            try:
+                curr.execute(
+                    'INSERT INTO users (username, email, password) VALUES (%s, %s, %s)',
+                    (username, email, hashed_password)
+                )
+                conn.commit()
+                session.pop('otp', None)  # Clear OTP after successful verification
+                return jsonify({'success': True, 'message': 'Sign up successful!'})
+            except mysql.connector.IntegrityError:
+                return jsonify({'success': False, 'message': 'Username or email already exists!'})
+            finally:
+                curr.close()
+                conn.close()
+        else:
+            return jsonify({'success': False, 'message': 'Database connection error!'})
     else:
         return jsonify({'success': False, 'message': 'Invalid OTP!'})
     
@@ -456,23 +500,22 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
-        # Get the database connection
         conn = get_db_connection()
         if conn is not None:
-            user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
+            user = cursor.fetchone()
             conn.close()
 
-            if user is None or not check_password_hash(user['password'], password):
+            
+            if user and check_password_hash(user['password'], password):
+                session['user_id'] = user['id']
+                session['username'] = user['username']
+                flash('Login successful!')
+                return redirect(url_for('index'))
+            else:
                 flash('Invalid email or password!')
                 return redirect(url_for('login'))
-
-            session['user_id'] = user['id']
-            if email == "admin@example.com" and password == "admin123":
-                session['is_admin'] = True  # Mark as admin
-                return redirect(url_for('admin_dashboard'))  # Redirect to admin dashboard route
-            else:
-                flash('Welcome, User!')
-                return redirect(url_for('question_selector'))  # Redirect to user route
         else:
             flash('Database connection error.')
             return render_template('login.html')
@@ -575,59 +618,6 @@ def game():
         flash('Please log in to access this page.')
         return redirect(url_for('login'))
     return render_template('game.html')
-
-@app.route('/code_correctness', methods=['GET', 'POST'])
-def code_correctness():
-    if 'user_id' not in session:
-        flash('Please log in to access this page.')
-        return redirect(url_for('login'))
-    
-    if request.method == 'POST':
-        input_code = request.form['inputCode']
-    else:
-        input_code = request.json.get('inputCode')
-        
-        # Call the Gemini API
-        api_url = 'https://api.gemini.com/v1/correct_code'  # Replace with actual Gemini API endpoint
-        headers = {
-            'Authorization': f'Bearer {GEMINI_API_KEY}',
-            'Content-Type': 'application/json'
-        }
-        payload = {'input_code': input_code}
-        
-        response = requests.post(api_url, headers=headers, json=payload)
-        
-        if response.status_code == 200:
-            corrected_code_result = response.json().get('corrected_code', '')
-        else:
-            corrected_code_result = "Error correcting code. Please try again later."
-        
-        return render_template('code_correctness.html', corrected_code=corrected_code_result)
-    
-    return render_template('code_correctness.html')
-
-
-@app.route('/api/correct_code', methods=['POST'])
-def api_correct_code():
-    data = request.json
-    input_code = data.get('input_code')
-    
-    # Call the Gemini API
-    api_url = 'https://api.gemini.com/v1/correct_code'  # Replace with actual Gemini API endpoint
-    headers = {
-        'Authorization': f'Bearer {GEMINI_API_KEY}',
-        'Content-Type': 'application/json'
-    }
-    payload = {'input_code': input_code}
-    
-    response = requests.post(api_url, headers=headers, json=payload)
-    
-    if response.status_code == 200:
-        corrected_code = response.json().get('corrected_code', '')
-    else:
-        corrected_code = "Error correcting code. Please try again later."
-    
-    return jsonify({'corrected_code': corrected_code})
 
 @app.route('/execute_code', methods=['POST'])
 def execute_code():

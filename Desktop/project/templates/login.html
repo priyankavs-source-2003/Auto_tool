@@ -73,50 +73,18 @@
     <main>
         <section class="auth-container">
             <h2>Login</h2>
-            <form id="login-form">
+            <!-- Form that sends data to the Flask backend -->
+            <form action="/login" method="POST">
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" required>
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required>
-                <button type="button" onclick="login()">Login</button>
+                <button type="submit">Login</button>
             </form>
         </section>
     </main>
     <footer>
         <p>&copy; 2024 Professional Website. All rights reserved.</p>
     </footer>
-    <script>
-        // Mock credentials for both admin and users
-        const ADMIN_EMAIL = "admin@example.com";
-        const ADMIN_PASSWORD = "admin123";
-
-        const USER_CREDENTIALS = [
-            { email: "user1@example.com", password: "user123" },
-            { email: "user2@example.com", password: "user456" }
-        ];
-
-        function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    // Check admin credentials
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        window.location.href = "/admin_dashboard"; // Redirect to admin route
-        return;
-    }
-
-    // Check user credentials
-    const isUser = USER_CREDENTIALS.some(
-        user => user.email === email && user.password === password
-    );
-
-    if (isUser) {
-        window.location.href = "/question_selector"; // Redirect to user route
-    } else {
-        alert("Invalid email or password!");
-    }
-}
-
-    </script>
 </body>
 </html>

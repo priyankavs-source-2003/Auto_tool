@@ -116,54 +116,28 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="typed-text">HELLO PROGRAMMER</div>
-        <div class="typed-text-small" style="display: none;">We are dedicated to helping you improve your code.</div>
-    </div>
-    <div class="code-correction-container">
-        <section class="code-correction-content">
-            <h2>Code Correctness</h2>
-            <p>“MAKE MISTAKES TO LEARN NEW THINGS”</p>
-            <div class="code-correction-boxes">
-                <div class="code-input-box">
-                    <h4>Input Code</h4>
-                    <textarea id="input-code" rows="10" cols="50"></textarea>
+    <header>
+        <h1>Code Correctness</h1>
+    </header>
+    <main>
+        <section>
+            <form method="POST" action="{{ url_for('code_correctness') }}">
+                <div>
+                    <label for="input-code">Input Code:</label><br>
+                    <textarea id="input-code" name="input_code" rows="10" cols="50"></textarea>
                 </div>
-                <div class="code-output-box">
-                    <h4>Corrected Code</h4>
-                    <textarea id="output-code" rows="10" cols="50" readonly></textarea>
-                </div>
-            </div>
-            <button id="submit-code" onclick="submitCode()">Submit</button>
+                <button type="submit">Submit</button>
+            </form>
         </section>
-    </div>
-    <script>
-        async function submitCode() {
-            const inputCode = document.getElementById('input-code').value;
-
-            const response = await fetch('/api/correct_code', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ input_code: inputCode })
-            });
-
-            const data = await response.json();
-            document.getElementById('output-code').value = data.corrected_code;
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                document.querySelector('.typed-text-small').style.display = 'block';
-                document.querySelector('.typed-text-small').style.animation = 'typing-small 4s steps(40, end) forwards, blink-caret 0.75s step-end infinite';
-            }, 1000);
-
-            setTimeout(() => {
-                document.querySelector('.container').style.display = 'none';
-                document.querySelector('.code-correction-container').style.display = 'flex';
-            }, 5500); // Adjust timing if necessary
-        });
-    </script>
+        {% if corrected_code %}
+        <section>
+            <h2>Corrected Code:</h2>
+            <textarea id="output-code" rows="10" cols="50" readonly>{{ corrected_code }}</textarea>
+        </section>
+        {% endif %}
+    </main>
+    <footer>
+        <p>&copy; 2024 Professional Website. All rights reserved.</p>
+    </footer>
 </body>
 </html>
