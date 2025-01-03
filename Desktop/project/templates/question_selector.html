@@ -4,7 +4,145 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Question</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Header Styling */
+        header {
+            text-align: center;
+            background-color: #007BFF;
+            color: white;
+            padding: 20px 0;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+        }
+
+        /* Form Styling */
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        label {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        select, button {
+            padding: 10px 15px;
+            font-size: 1rem;
+            border: 1px solid #007BFF;
+            border-radius: 5px;
+            outline: none;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        select:hover, button:hover {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            font-weight: bold;
+        }
+
+        /* Main Content Styling */
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        thead {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        thead th {
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #ddd;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        tbody td {
+            padding: 12px 15px;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        .solve-button {
+            display: inline-block;
+            padding: 8px 15px;
+            font-size: 1rem;
+            color: white;
+            background-color: #28A745;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .solve-button:hover {
+            background-color: #218838;
+            transform: scale(1.05);
+        }
+
+        /* No Questions Message */
+        tbody td[colspan="4"] {
+            text-align: center;
+            font-style: italic;
+            color: #777;
+            padding: 20px;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -35,7 +173,6 @@
             <thead>
                 <tr>
                     <th>Question</th>
-                    <th>Type</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -44,11 +181,9 @@
                 {% if questions %}
                     {% for question in questions %}
                     <tr>
-                        <td>{{ question.title }}</td> <!-- Displaying 'title' from the question -->
-                        <td>{{ question.type }}</td> <!-- Displaying 'type' from the question -->
-                        <td>{{ question.status }}</td> <!-- Displaying 'status' from the question -->
+                        <td>{{ question.title }}</td>
+                        <td>{{ question.status }}</td>
                         <td>
-                            <!-- Link to the coding environment page with the question_id -->
                             <a href="{{ url_for('coding_environment', question_id=question.id) }}" class="solve-button">Solve</a>
                         </td>
                     </tr>
@@ -59,6 +194,7 @@
                     </tr>
                 {% endif %}
             </tbody>
+            
         </table>
     </main>
 </body>

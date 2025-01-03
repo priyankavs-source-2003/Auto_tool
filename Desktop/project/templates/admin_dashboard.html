@@ -38,7 +38,8 @@
             display: block;
         }
         .form-container input,
-        .form-container textarea {
+        .form-container textarea,
+        .form-container select {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -75,6 +76,15 @@
                 <label for="test-cases">Test Cases (JSON format):</label>
                 <textarea id="test-cases" name="test-cases" placeholder='[{"input": "2", "output": "4"}]' required></textarea>
 
+                <label for="topic">Topic:</label>
+                <select id="topic" name="topic" required>
+                    <option value="" disabled selected>Select a topic</option>
+                    <option value="Arrays">Arrays</option>
+                    <option value="Loops">Loops</option>
+                    <option value="Stacks">Stacks</option>
+                    <option value="Queues">Queues</option>
+                </select>
+
                 <button type="button" onclick="addProblem()">Add Problem</button>
             </form>
         </div>
@@ -84,6 +94,9 @@
             const title = document.getElementById("title").value;
             const description = document.getElementById("description").value;
             const testCases = document.getElementById("test-cases").value;
+            const topic = document.getElementById("topic").value;
+
+            console.log({ title, description, testCases, topic });
 
             try {
                 const response = await fetch("/add_problem", {
@@ -91,14 +104,20 @@
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ title, description, testCases }),
+                    body: JSON.stringify({ 
+                        title, 
+                        description, 
+                        testCases, 
+                        topic 
+                    }),
                 });
 
                 if (response.ok) {
                     alert("Problem added successfully!");
                     document.getElementById("add-problem-form").reset();
                 } else {
-                    alert("Failed to add problem.");
+                    const error = await response.json();
+                    alert(`Failed to add problem: ${error.error}`);
                 }
             } catch (error) {
                 console.error("Error adding problem:", error);

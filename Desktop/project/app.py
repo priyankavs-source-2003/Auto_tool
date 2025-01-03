@@ -168,37 +168,51 @@ admin_email = "admin@example.com"
 admin_password = "admin123"
 hashed_password = generate_password_hash(admin_password)
 
-# Route to add a new problem
+import logging
+logging.basicConfig(level=logging.DEBUG)
+import json  # Ensure you import Python's built-in json module
+
 @app.route('/add_problem', methods=['POST'])
 def add_problem():
     data = request.get_json()
+    logging.debug(f"Received data: {data}")
+
     title = data.get('title')
     description = data.get('description')
     test_cases = data.get('testCases')
+    topic = data.get('topic')
 
-    if not (title and description and test_cases):
+    # Validate that all fields are provided
+    if not (title and description and test_cases and topic):
+        logging.error("Missing required fields")
         return jsonify({'error': 'All fields are required'}), 400
 
-    # Validate JSON format for test cases
+    # Validate and parse JSON format for test cases
     try:
         test_cases = json.loads(test_cases)
-    except json.JSONDecodeError:
+    except ValueError as e:  # Use ValueError instead of JSONDecodeError
+        logging.error(f"Invalid JSON format: {e}")
         return jsonify({'error': 'Invalid JSON format for test cases'}), 400
 
+    # Connect to the database
     conn = get_db_connection()
     if conn is not None:
         try:
-            conn.execute(
-                'INSERT INTO problems (title, description, test_cases) VALUES (?, ?, ?)',
-                (title, description, json.dumps(test_cases))
+            cursor = conn.cursor()
+            # Insert data into the database
+            cursor.execute(
+                'INSERT INTO problems (title, description, test_cases, topic) VALUES (%s, %s, %s, %s)',
+                (title, description, json.dumps(test_cases), topic)
             )
             conn.commit()
             conn.close()
             return jsonify({'success': 'Problem added successfully'}), 200
         except Exception as e:
+            logging.error(f"Database error: {e}")
             conn.close()
             return jsonify({'error': f'Database error: {e}'}), 500
     else:
+        logging.error("Database connection error")
         return jsonify({'error': 'Database connection error'}), 500
     
 @app.route('/admin_dashboard')
@@ -493,41 +507,54 @@ def verify_otp():
             return jsonify({'success': False, 'message': 'Database connection error!'})
     else:
         return jsonify({'success': False, 'message': 'Invalid OTP!'})
-    
-@app.route('/login', methods=('GET', 'POST'))
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
 
-        conn = get_db_connection()
-        if conn is not None:
-            cursor = conn.cursor(dictionary=True)
-            cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
-            user = cursor.fetchone()
-            conn.close()
+        # Check if admin credentials are used
+        if email == 'admin@example.com' and password == 'admin123':
+            session['user_id'] = 'admin'
+            session['is_admin'] = True
+            flash('Welcome, Admin!')
+            return redirect(url_for('admin_dashboard'))
 
-            
-            if user and check_password_hash(user['password'], password):
-                session['user_id'] = user['id']
-                session['username'] = user['username']
-                flash('Login successful!')
-                return redirect(url_for('index'))
-            else:
-                flash('Invalid email or password!')
+        # Check database for regular user credentials
+        conn = get_db_connection()
+        if conn:
+            try:
+                cursor = conn.cursor(dictionary=True)  # Use dictionary cursor for easier access
+                cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
+                user = cursor.fetchone()  # Fetch the first matching user (consumes the result)
+
+                if user and check_password_hash(user['password'], password):
+                    session['user_id'] = user['id']
+                    session['is_admin'] = False
+                    flash('Login successful!')
+                    return redirect(url_for('index'))
+                else:
+                    flash('Invalid email or password!')
+                    return redirect(url_for('login'))
+            except Exception as e:
+                flash(f"Error: {str(e)}")
                 return redirect(url_for('login'))
+            finally:
+                # Always close the cursor and connection
+                cursor.close()
+                conn.close()
         else:
             flash('Database connection error.')
             return render_template('login.html')
 
     return render_template('login.html')
 
-@app.route('/problem_solving')
-def problem_solving():
-    if 'user_id' not in session:
-        flash('Please log in to access this page.')
-        return redirect(url_for('login'))
-    return render_template('problem_solving.html')
+# @app.route('/problem_solving')
+# def problem_solving():
+#     if 'user_id' not in session:
+#         flash('Please log in to access this page.')
+#         return redirect(url_for('login'))
+#     return render_template('problem_solving.html')
 
 @app.route('/get_questions')
 def get_questions():
@@ -551,64 +578,48 @@ def submit_code():
     code = data['code']
     # Submission logic here
     return jsonify({"message": "Code submitted successfully!"})
-
-# Example Flask Route (question_selector)
 @app.route('/question_selector', methods=['GET'])
 def question_selector():
-    # Get query parameters for language and topic
-    language = request.args.get('language')
+    conn = get_db_connection()
+    cursor = conn.cursor()
     topic = request.args.get('topic')
 
-    # Ensure both parameters are provided
-    if not language or not topic:
-        flash('Please select a language and topic.')
-        return redirect(url_for('index'))  # Redirect to the index or a different page if params are missing
+    # Log the topic for debugging
+    logging.debug(f"Fetching problems for topic: {topic}")
 
-    # Connect to the database
-    conn = get_db_connection()
-    if conn is None:
-        flash('Database connection error.')
-        return redirect(url_for('index'))  # Redirect to the index page in case of a database error
+    # Fetch only titles and IDs for the selected topic
+    query = "SELECT id, title FROM problems WHERE topic = %s"
+    cursor.execute(query, (topic,))
+    problems = cursor.fetchall()
 
-    # Query the database for questions based on the selected language and topic
-    try:
-        cursor = conn.cursor()
-        query = "SELECT * FROM questions WHERE language = ? AND topic = ?"
-        cursor.execute(query, (language, topic))  # Execute the query with the parameters
-        questions = cursor.fetchall()  # Fetch all the questions matching the criteria
-        cursor.close()
-        conn.close()  # Always close the connection after use
-    except Exception as e:
-        flash(f"Error fetching questions: {str(e)}")
-        return redirect(url_for('index'))  # Redirect if an error occurs during the database query
+    # Log the result of the query
+    logging.debug(f"Fetched problems: {problems}")
 
-    # Render the template and pass the questions list to it
+    # Check if problems are retrieved
+    if not problems:
+        logging.warning(f"No problems found for topic: {topic}")
+
+    # Create a default "unsolved" status for all problems
+    questions = [{"id": p[0], "title": p[1], "status": "unsolved"} for p in problems]
+
+    # Pass questions to the template
     return render_template("question_selector.html", questions=questions)
 
-
-@app.route('/coding_environment/<int:question_id>')
+@app.route('/coding_environment/<int:question_id>', methods=['GET', 'POST'])
 def coding_environment(question_id):
-    # Connect to the database
+    # Retrieve the problem details from the database using question_id
     conn = get_db_connection()
-    if conn is None:
-        flash('Database connection error.')
-        return redirect(url_for('index'))
+    cursor = conn.cursor()
+    query = "SELECT * FROM problems WHERE id = %s"
+    cursor.execute(query, (question_id,))
+    p = cursor.fetchone()
 
-    # Fetch the question details using the question_id
-    try:
-        cursor = conn.cursor()
-        query = "SELECT * FROM questions WHERE id = ?"
-        cursor.execute(query, (question_id,))
-        question = cursor.fetchone()  # Fetch a single question based on id
+    if p:
+        print(p)  # Print the problem to check its contents
+        return render_template("coding_environment.html", problem=p)
 
-        if question:
-            # Pass the question details to the template
-            return render_template('coding_environment.html', question=question)
-        else:
-            return "Question not found", 404
-    except Exception as e:
-        flash(f"Error fetching question: {str(e)}")
-        return redirect(url_for('index'))
+    else:
+        return jsonify({"error": "Problem not found"}), 404
 
 
 
