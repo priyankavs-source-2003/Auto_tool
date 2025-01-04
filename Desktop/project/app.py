@@ -628,35 +628,95 @@ def game():
     if 'user_id' not in session:
         flash('Please log in to access this page.')
         return redirect(url_for('login'))
-    return render_template('game.html')
-
+    return render_template('game.html')@app.route('/execute_code', methods=['POST'])
 @app.route('/execute_code', methods=['POST'])
 def execute_code():
     try:
+        # Log the full request for debugging
+        print(f"Request headers: {request.headers}")
+        print(f"Request data: {request.json}")
+
         data = request.json
         code = data['code']
+        language = data['language']
+        problem_id = data.get('problemId')  # Get the problem ID
 
-        # Example: Execute Python code (ensure security checks here!)
-        exec_globals = {}
-        exec_locals = {}
-        exec(code, exec_globals, exec_locals)
+        # Validate inputs
+        if not code or not language or not problem_id:
+            return jsonify({"error": "Code, language, and problemId are required"}), 400
 
-        # Assuming 'output' is defined in the code being executed
-        output = exec_locals.get('output', 'No output')
+        # Check if language is supported
+        if language != "python":
+            return jsonify({"error": "Unsupported language"}), 400
 
-        return jsonify({"output": output}), 200
+        # Fetch test cases from the database
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT test_cases FROM problems WHERE id = %s", (problem_id,))
+            result = cursor.fetchone()
+        conn.close()
+
+        if not result or not result[0]:
+            return jsonify({"error": "Test cases not found for the provided problem ID"}), 404
+
+        # Parse test cases from JSON
+        test_cases = json.loads(result[0])
+        print(f"Test cases from DB: {test_cases}")
+
+        # Prepare results to return
+        results = []
+
+        # Execute the user's code dynamically
+        local_variables = {}
+        exec(code, {}, local_variables)
+
+        # Ensure the function exists
+        if "positive_or_negative" not in local_variables:
+            return jsonify({"error": "Function 'positive_or_negative' not found in the code"}), 400
+
+        function_to_test = local_variables["positive_or_negative"]
+
+        for test_case in test_cases:
+            try:
+                test_input = test_case['input']
+                expected_output = str(test_case['output']).strip()
+
+                # Execute the function
+                actual_output = str(function_to_test(test_input)).strip()
+
+                # Compare results
+                passed = actual_output == expected_output
+                results.append({
+                    "test_case_id": test_cases.index(test_case) + 1,
+                    "input": test_input,
+                    "expected_output": expected_output,
+                    "actual_output": actual_output,
+                    "passed": passed
+                })
+            except Exception as e:
+                results.append({
+                    "test_case_id": test_cases.index(test_case) + 1,
+                    "input": test_case['input'],
+                    "expected_output": test_case['output'],
+                    "actual_output": str(e),
+                    "passed": False
+                })
+
+        # Return the results
+        return jsonify({"results": results}), 200
+
     except Exception as e:
+        print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
-
-@app.route('/test_db')
-def test_db():
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SHOW TABLES;")
-        tables = cursor.fetchall()
-        return jsonify({"tables": tables})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+# @app.route('/test_db')
+# def test_db():
+#     try:
+#         cursor = conn.cursor()
+#         cursor.execute("SHOW TABLES;")
+#         tables = cursor.fetchall()
+#         return jsonify({"tables": tables})
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
     
 if __name__ == '__main__':
     create_table()

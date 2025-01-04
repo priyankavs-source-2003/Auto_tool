@@ -85,48 +85,29 @@
         /* Right Panel: Output */
         .right-panel {
             width: 30%;
-            background: white;
-            border-left: 1px solid #ddd;
+            background: #1e1e1e;
+            color: #d4d4d4;
             display: flex;
             flex-direction: column;
             padding: 20px;
             overflow-y: auto;
-        }
-        .right-panel .tabs {
-            display: flex;
-            border-bottom: 2px solid #ddd;
-        }
-        .tab {
-            flex: 1;
-            text-align: center;
-            padding: 10px;
-            cursor: pointer;
+            font-family: Consolas, monospace;
             font-size: 14px;
         }
-        .tab.active {
-            color: white;
-            background-color: #007bff;
-        }
-        .tab-content {
-            flex: 1;
-            display: none;
-            padding: 10px;
-            border: 1px solid #ddd;
-            margin-top: 10px;
-            border-radius: 5px;
-            overflow-y: auto;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        textarea {
-            width: 100%;
-            height: 100px;
+        .terminal-header {
+            color: #f3f3f3;
             margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
+            font-weight: bold;
+        }
+        .output-line {
+            white-space: pre-wrap;
+            margin-bottom: 5px;
+        }
+        .test-result {
+            color: #00ff00; /* Green for passed */
+        }
+        .test-result.failed {
+            color: #ff0000; /* Red for failed */
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
@@ -139,7 +120,6 @@
             <h2>Question Description</h2>
             <p>{{ problem[2] }}</p>  <!-- For description -->
             <p><strong>Type:</strong> {{ problem[4] }}</p>  <!-- For topic -->
-
         </section>
 
         <!-- Code Editor -->
@@ -151,47 +131,72 @@
 
         <!-- Output Section -->
         <section class="right-panel">
-            <div class="tabs">
-                <div class="tab active" onclick="switchTab('output')">Test Results</div>
-                <div class="tab" onclick="switchTab('custom-input')">Custom Input</div>
-            </div>
-            <div id="output" class="tab-content active">
-                <h3>Output</h3>
-                <pre id="output-content" style="white-space: pre-wrap;">Results will appear here.</pre>
-            </div>
-            <div id="custom-input" class="tab-content">
-                <h3>Custom Input</h3>
-                <textarea id="custom-input-area"></textarea>
-                <button class="run-code-btn" onclick="runCustomCode()">Run with Custom Input</button>
-            </div>
+            <div class="terminal-header">Terminal</div>
+            <div id="output-content"></div>
         </section>
     </main>
-
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const editor = ace.edit("editor");
             editor.setTheme("ace/theme/monokai");
             editor.session.setMode("ace/mode/python");
-            editor.setValue("# Write your code here");
+            editor.setValue("# Write your code here\nprint('Hello, World!')");
             editor.setShowPrintMargin(false);
         });
+        async function runCode() {
+    const code = ace.edit("editor").getValue();
+    const outputElement = document.getElementById("output-content");
 
-        function runCode() {
-            const code = ace.edit("editor").getValue();
-            document.getElementById("output-content").textContent = `Running code:\n${code}`;
-        }
+    const problemId = 1; // Example problem ID; adjust dynamically if needed.
+    const language = "python";
 
-        function runCustomCode() {
-            const customInput = document.getElementById("custom-input-area").value;
-            document.getElementById("output-content").textContent = `Running with custom input:\n${customInput}`;
-        }
+    try {
+        outputElement.innerHTML = `<div class="output-line">Running code...</div>`;
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            document.querySelector(`#${tabId}`).classList.add('active');
-            document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        const response = await fetch("/execute_code", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                code,
+                language,
+                problemId,
+            }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            outputElement.innerHTML = ""; // Clear previous output
+
+            if (result.results && Array.isArray(result.results)) {
+                result.results.forEach((testCaseResult) => {
+                    const status = testCaseResult.passed
+                        ? '<span class="test-result">Test Case Passed</span>'
+                        : '<span class="test-result failed">Test Case Failed</span>';
+
+                    outputElement.innerHTML += `
+                        <div class="output-line">Test Case ${testCaseResult.test_case_id}:</div>
+                        <div class="output-line">Input: ${testCaseResult.input}</div>
+                        <div class="output-line">Expected Output: ${testCaseResult.expected_output}</div>
+                        <div class="output-line">Your Output: ${testCaseResult.actual_output}</div>
+                        <div class="output-line">${status}</div>
+                        <br/>
+                    `;
+                });
+            } else {
+                outputElement.innerHTML = `<div class="output-line failed">Error: Invalid response format</div>`;
+            }
+        } else {
+            outputElement.innerHTML = `<div class="output-line failed">Error: ${result.error || "Unknown error"}</div>`;
         }
+    } catch (error) {
+        outputElement.innerHTML = `<div class="output-line failed">Error: ${error.message}</div>`;
+    }
+}
+
+
     </script>
 </body>
 </html>
