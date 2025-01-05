@@ -119,7 +119,7 @@ def safe_execute(code):
         return "Execution timed out."
 
 
-# Seed database with admin and sample data
+
 def seed_db():
     conn = get_db_connection()
     if conn:
@@ -360,10 +360,12 @@ def update_profile_photo():
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         
         conn = get_db_connection()
-        conn.execute('UPDATE users SET profile_photo = ? WHERE id = ?', (filename, session['user_id']))
+        
+        # Check if user details exist for the user, if not, insert them
+        conn.execute('INSERT OR REPLACE INTO user_details (user_id, profile_photo) VALUES (%s, %s)',
+                     (session['user_id'], filename))
         conn.commit()
         conn.close()
-        
         flash('Profile photo updated successfully!')
     else:
         flash('Invalid file format or no file uploaded.')
@@ -378,6 +380,7 @@ def update_profile_details():
     college = request.form['college']
     phone_number = request.form['phone_number']
     
+    # Connect to SQLite database and update profile details
     conn = get_db_connection()
     conn.execute('UPDATE users SET college = ?, phone_number = ? WHERE id = ?', (college, phone_number, session['user_id']))
     conn.commit()
@@ -385,7 +388,6 @@ def update_profile_details():
     
     flash('Profile details updated successfully!')
     return redirect(url_for('profile'))
-
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
