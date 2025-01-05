@@ -48,7 +48,6 @@ def get_db_connection():
     try:
         conn = mysql.connector.connect(**mysql_config)
         if conn.is_connected():
-            print("Database connected successfully!")
             return conn
         else:
             print("Failed to connect to the database.")
@@ -629,85 +628,114 @@ def game():
         flash('Please log in to access this page.')
         return redirect(url_for('login'))
     return render_template('game.html')@app.route('/execute_code', methods=['POST'])
+
+import re
+
+def sanitize_function_name(title):
+    # Replace invalid characters with underscores and ensure it starts with a valid identifier
+    return re.sub(r'\W|^(?=\d)', '_', title)
 @app.route('/execute_code', methods=['POST'])
 def execute_code():
     try:
-        # Log the full request for debugging
-        print(f"Request headers: {request.headers}")
-        print(f"Request data: {request.json}")
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid JSON data"}), 400
 
-        data = request.json
-        code = data['code']
-        language = data['language']
-        problem_id = data.get('problemId')  # Get the problem ID
+        code = data.get("code", "")
+        language = data.get("language", "python")
+        problem_id = data.get("problemId", None)
 
-        # Validate inputs
-        if not code or not language or not problem_id:
-            return jsonify({"error": "Code, language, and problemId are required"}), 400
+        if not problem_id:
+            return jsonify({"error": "Problem ID is required"}), 400
 
-        # Check if language is supported
         if language != "python":
-            return jsonify({"error": "Unsupported language"}), 400
+            return jsonify({"error": "Only Python is supported."}), 400
 
-        # Fetch test cases from the database
-        conn = get_db_connection()
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT test_cases FROM problems WHERE id = %s", (problem_id,))
-            result = cursor.fetchone()
-        conn.close()
+        # Fetch problem details from the database
+        try:
+            db_connection = get_db_connection()
+            cursor = db_connection.cursor(dictionary=True)
 
-        if not result or not result[0]:
-            return jsonify({"error": "Test cases not found for the provided problem ID"}), 404
+            cursor.execute("SELECT * FROM problems WHERE id = %s", (problem_id,))
+            problem = cursor.fetchone()
 
-        # Parse test cases from JSON
-        test_cases = json.loads(result[0])
-        print(f"Test cases from DB: {test_cases}")
+            if not problem:
+                return jsonify({"error": f"Problem with ID {problem_id} not found"}), 404
 
-        # Prepare results to return
-        results = []
+            # Extract test cases and sanitize the title as the function name
+            test_cases = json.loads(problem['test_cases'])
+            raw_function_name = problem['title']
+            function_name = sanitize_function_name(raw_function_name)
+            results = []
 
-        # Execute the user's code dynamically
-        local_variables = {}
-        exec(code, {}, local_variables)
-
-        # Ensure the function exists
-        if "positive_or_negative" not in local_variables:
-            return jsonify({"error": "Function 'positive_or_negative' not found in the code"}), 400
-
-        function_to_test = local_variables["positive_or_negative"]
-
-        for test_case in test_cases:
             try:
-                test_input = test_case['input']
-                expected_output = str(test_case['output']).strip()
+                # Execute user-provided code
+                exec_globals = {}
+                exec(code, exec_globals)
 
-                # Execute the function
-                actual_output = str(function_to_test(test_input)).strip()
+                # Fallback to find any user-defined function if the expected one is not found
+                if function_name not in exec_globals:
+                    user_defined_functions = [
+                        name for name, obj in exec_globals.items() if callable(obj)
+                    ]
+                    if not user_defined_functions:
+                        return jsonify({
+                            "error": f"No function found in the provided code. "
+                                     f"Expected: '{raw_function_name}' (sanitized as '{function_name}')."
+                        }), 400
+                    elif len(user_defined_functions) > 1:
+                        return jsonify({
+                            "error": f"Multiple functions found in the provided code. "
+                                     f"Expected: '{raw_function_name}' (sanitized as '{function_name}')."
+                        }), 400
+                    else:
+                        # Use the only available function as fallback
+                        function_name = user_defined_functions[0]
 
-                # Compare results
-                passed = actual_output == expected_output
-                results.append({
-                    "test_case_id": test_cases.index(test_case) + 1,
-                    "input": test_input,
-                    "expected_output": expected_output,
-                    "actual_output": actual_output,
-                    "passed": passed
-                })
+                user_function = exec_globals[function_name]
+
+                for test_case in test_cases:
+                    test_input = test_case['input']
+                    expected_output = test_case['output']
+
+                    try:
+                        if isinstance(test_input, list):
+                            actual_output = user_function(*test_input)
+                        else:
+                            actual_output = user_function(test_input)
+
+                        passed = (str(actual_output) == str(expected_output))
+                        results.append({
+                            "test_case_id": test_case.get("id", len(results) + 1),
+                            "input": test_input,
+                            "expected_output": expected_output,
+                            "actual_output": actual_output,
+                            "passed": passed
+                        })
+
+                    except Exception as e:
+                        results.append({
+                            "test_case_id": test_case.get("id", len(results) + 1),
+                            "input": test_input,
+                            "expected_output": expected_output,
+                            "actual_output": str(e),
+                            "passed": False
+                        })
+
             except Exception as e:
-                results.append({
-                    "test_case_id": test_cases.index(test_case) + 1,
-                    "input": test_case['input'],
-                    "expected_output": test_case['output'],
-                    "actual_output": str(e),
-                    "passed": False
-                })
+                return jsonify({"error": f"Code execution failed: {e}"}), 400
 
-        # Return the results
-        return jsonify({"results": results}), 200
+            return jsonify({"results": results})
+
+        except mysql.connector.Error as err:
+            return jsonify({"error": f"Database error: {err}"}), 500
+
+        finally:
+            if 'db_connection' in locals():
+                db_connection.close()
 
     except Exception as e:
-        print(f"Error: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Unexpected server error: {e}"}), 500
 # @app.route('/test_db')
 # def test_db():
 #     try:

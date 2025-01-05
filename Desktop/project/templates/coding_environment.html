@@ -1,153 +1,154 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coding Environment</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        /* General Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f6f7;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-        header {
-            background-color: #007bff;
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
-            font-size: 20px;
-            font-weight: bold;
-        }
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: row;
-            height: calc(100% - 60px); /* Account for header height */
-        }
-        /* Left Panel: Question Description */
-        .left-panel {
-            width: 30%;
-            background: white;
-            border-right: 1px solid #ddd;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        .left-panel h2 {
-            margin-bottom: 10px;
-            font-size: 18px;
-            color: #007bff;
-        }
-        .left-panel p {
-            margin-bottom: 15px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        /* Middle Panel: Editor */
-        .middle-panel {
-            flex: 1;
-            background: white;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-        .middle-panel h2 {
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-        #editor {
-            flex: 1;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .run-code-btn {
-            margin-top: 10px;
-            padding: 10px 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            align-self: flex-end;
-        }
-        .run-code-btn:hover {
-            background-color: #0056b3;
-        }
-        /* Right Panel: Output */
-        .right-panel {
-            width: 30%;
-            background: #1e1e1e;
-            color: #d4d4d4;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            overflow-y: auto;
-            font-family: Consolas, monospace;
-            font-size: 14px;
-        }
-        .terminal-header {
-            color: #f3f3f3;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        .output-line {
-            white-space: pre-wrap;
-            margin-bottom: 5px;
-        }
-        .test-result {
-            color: #00ff00; /* Green for passed */
-        }
-        .test-result.failed {
-            color: #ff0000; /* Red for failed */
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
-</head>
-<body>
-    <header>Coding Environment</header>
-    <main>
-        <!-- Question Section -->
-        <section class="left-panel">
-            <h2>Question Description</h2>
-            <p>{{ problem[2] }}</p>  <!-- For description -->
-            <p><strong>Type:</strong> {{ problem[4] }}</p>  <!-- For topic -->
-        </section>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Coding Environment</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <style>
+            /* General Reset */
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f5f6f7;
+                color: #333;
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+            }
+            header {
+                background-color: #007bff;
+                color: white;
+                padding: 15px 20px;
+                text-align: center;
+                font-size: 20px;
+                font-weight: bold;
+            }
+            main {
+                flex: 1;
+                display: flex;
+                flex-direction: row;
+                height: calc(100% - 60px); /* Account for header height */
+            }
+            /* Left Panel: Question Description */
+            .left-panel {
+                width: 30%;
+                background: white;
+                border-right: 1px solid #ddd;
+                padding: 20px;
+                overflow-y: auto;
+            }
+            .left-panel h2 {
+                margin-bottom: 10px;
+                font-size: 18px;
+                color: #007bff;
+            }
+            .left-panel p {
+                margin-bottom: 15px;
+                font-size: 14px;
+                line-height: 1.5;
+            }
+            /* Middle Panel: Editor */
+            .middle-panel {
+                flex: 1;
+                background: white;
+                display: flex;
+                flex-direction: column;
+                padding: 20px;
+            }
+            .middle-panel h2 {
+                margin-bottom: 10px;
+                font-size: 18px;
+            }
+            #editor {
+                flex: 1;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+            }
+            .run-code-btn {
+                margin-top: 10px;
+                padding: 10px 15px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                align-self: flex-end;
+            }
+            .run-code-btn:hover {
+                background-color: #0056b3;
+            }
+            /* Right Panel: Output */
+            .right-panel {
+                width: 30%;
+                background: #1e1e1e;
+                color: #d4d4d4;
+                display: flex;
+                flex-direction: column;
+                padding: 20px;
+                overflow-y: auto;
+                font-family: Consolas, monospace;
+                font-size: 14px;
+            }
+            .terminal-header {
+                color: #f3f3f3;
+                margin-bottom: 10px;
+                font-weight: bold;
+            }
+            .output-line {
+                white-space: pre-wrap;
+                margin-bottom: 5px;
+            }
+            .test-result {
+                color: #00ff00; /* Green for passed */
+            }
+            .test-result.failed {
+                color: #ff0000; /* Red for failed */
+            }
+        </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
+    </head>
+    <body>
+        <header>Coding Environment</header>
+        <main>
+            <!-- Question Section -->
+            <section class="left-panel">
+                <h2>Question Description</h2>
+                <p>{{ problem[2] }}</p>  <!-- For description -->
+                <p><strong>Type:</strong> {{ problem[4] }}</p>  <!-- For topic -->
+                
+            </section>
 
-        <!-- Code Editor -->
-        <section class="middle-panel">
-            <h2>Code Editor</h2>
-            <div id="editor"></div>
-            <button class="run-code-btn" onclick="runCode()">Run Code</button>
-        </section>
+            <!-- Code Editor -->
+            <section class="middle-panel">
+                <h2>Code Editor</h2>
+                <input type="hidden" id="problem-id" value="{{ problem[0] }}"> 
+                <div id="editor"></div>
+                <button class="run-code-btn" onclick="runCode()">Run Code</button>
+            </section>
 
-        <!-- Output Section -->
-        <section class="right-panel">
-            <div class="terminal-header">Terminal</div>
-            <div id="output-content"></div>
-        </section>
-    </main>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const editor = ace.edit("editor");
-            editor.setTheme("ace/theme/monokai");
-            editor.session.setMode("ace/mode/python");
-            editor.setValue("# Write your code here\nprint('Hello, World!')");
-            editor.setShowPrintMargin(false);
-        });
-        async function runCode() {
+            <!-- Output Section -->
+            <section class="right-panel">
+                <div class="terminal-header">Terminal</div>
+                <div id="output-content"></div>
+            </section>
+        </main>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const editor = ace.edit("editor");
+                editor.setTheme("ace/theme/monokai");
+                editor.session.setMode("ace/mode/python");
+                editor.setValue("# Write your code here\nprint('Hello, World!')");
+                editor.setShowPrintMargin(false);
+            });
+            async function runCode() {
     const code = ace.edit("editor").getValue();
     const outputElement = document.getElementById("output-content");
-
-    const problemId = 1; // Example problem ID; adjust dynamically if needed.
+    const problemId = document.getElementById("problem-id").value;
     const language = "python";
 
     try {
@@ -158,14 +159,15 @@
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                code,
-                language,
-                problemId,
-            }),
+            body: JSON.stringify({ code, language, problemId }),
         });
 
-        const result = await response.json();
+        let result;
+        try {
+            result = await response.json(); // Attempt to parse JSON
+        } catch {
+            throw new Error("Unexpected server response. Expected JSON but got HTML or another format.");
+        }
 
         if (response.ok) {
             outputElement.innerHTML = ""; // Clear previous output
@@ -196,7 +198,6 @@
     }
 }
 
-
-    </script>
-</body>
-</html>
+        </script>
+    </body>
+    </html>
