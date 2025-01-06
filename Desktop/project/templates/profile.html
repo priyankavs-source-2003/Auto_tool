@@ -4,53 +4,168 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+        }
+
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        nav ul li {
+            margin-right: 15px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .profile-container {
+            max-width: 900px;
+            margin: 30px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .profile-photo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #007bff;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        form label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        form input[type="text"], 
+        form input[type="email"], 
+        form input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        form button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
 </head>
 <body>
     <header>
         <nav>
             <ul>
                 <li><a href="{{ url_for('index') }}">Home</a></li>
-                <li><a href="{{ url_for('about') }}">About Us</a></li>
+                <li><a href="{{ url_for('about') }}">About</a></li>
                 <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
-                <li><a href="{{ url_for('profile') }}">Profile</a></li>
                 <li><a href="{{ url_for('logout') }}">Logout</a></li>
             </ul>
         </nav>
     </header>
     <main>
         <section class="profile-container">
-            <h2>Profile</h2>
+            <h2>User Profile</h2>
             <div class="profile-photo-container">
                 {% if user.profile_photo %}
+                    <!-- Update the folder to 'uploads' if your images are stored in static/uploads/ -->
                     <img src="{{ url_for('static', filename='uploads/' + user.profile_photo) }}" alt="Profile Photo" class="profile-photo">
                 {% else %}
                     <img src="https://cdn.icon-icons.com/icons2/3709/PNG/512/page_portfolio_my_profile_browser_content_web_website_seo_icon_230057.png" alt="Default Profile Photo" class="profile-photo">
                 {% endif %}
             </div>
             
-            <form action="{{ url_for('profile') }}" method="POST" enctype="multipart/form-data">
-                <label for="profile_photo">Profile Photo:</label>
-                <input type="file" id="profile_photo" name="profile_photo">
+            
+            <form method="POST" enctype="multipart/form-data">
+                <label for="profile_photo">Choose Profile Photo:</label>
+                    <input type="file" name="profile_photo" id="profile_photo" accept="image/*"><br>
                 
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" value="{{ user.username }}" readonly>
-                
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" value="{{ user.email }}" readonly>
-                
-                <label for="college">College:</label>
-                <input type="text" id="college" name="college" value="{{ user.college }}">
-                
-                <label for="phone_number">Phone Number:</label>
-                <input type="text" id="phone_number" name="phone_number" value="{{ user.phone_number }}">
-                
-                <button type="submit">Update Profile</button>
-            </form>
+                <form method="POST" action="{{ url_for('profile') }}">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" value="{{ user['username'] }}" readonly>
+                    
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" value="{{ user['email'] }}" readonly>
+                    
+                    <label for="college">College:</label>
+                    <input type="text" id="college" name="college" value="{{ user['college'] }}">
+                    
+                    <label for="phone_number">Phone Number:</label>
+                    <input type="text" id="phone_number" name="phone_number" value="{{ user['phone_number'] }}">
+                    
+                    <button type="submit">Update Profile</button>
+                </form>
+           
         </section>
     </main>
     <footer>
-        <p>&copy; 2024 Professional Website. All rights reserved.</p>
+        <p>&copy; 2025 Automated Tool. All rights reserved.</p>
     </footer>
+    <script>
+        document.getElementById('profile_photo').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.querySelector('.profile-photo').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
 </body>
 </html>

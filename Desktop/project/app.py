@@ -26,21 +26,16 @@ app.config['MAIL_DEFAULT_SENDER'] = 'ATAP@gmail.com'
 mail = Mail(app)
 
 otp_storage = {}
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATABASE_PATH = os.path.join(BASE_DIR, 'automated_tool.db')  # Corrected filename
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')  # Use BASE_DIR for consistency
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+
+
 
 # MySQL Configuration
 mysql_config = {
     'host': 'localhost',
     'database': 'project_db',
-    'user': 'priya',
-    'password': 'priyanka@1234'
+    'user': 'root',
+    'password': 'Priya@2003'
 }
 
 # Database connection
@@ -102,10 +97,6 @@ def code_correctness():
 
     return render_template('code_correctness.html', corrected_code=corrected_code_result)
 
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
 def safe_execute(code):
     try:
         process = subprocess.run(
@@ -132,9 +123,7 @@ def seed_db():
             ''', ('admin', 'admin@example.com', hashed_password))
 
             users = [
-                ('priyankavs', 'priyankavs2023@gmail.com', generate_password_hash("1234")),
-                ('user2', 'user2@example.com', generate_password_hash("user456"))
-            ]
+                ]
             cursor.executemany('''
                 INSERT IGNORE INTO users (username, email, password)
                 VALUES (%s, %s, %s)
@@ -303,78 +292,82 @@ def contact():
     return render_template('contact.html')
 
 
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')  # Directory for storing profile photos
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Ensure the upload folder exists
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+# Function to check allowed file extensions
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+
+
+# Route to view and update the profile
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     if 'user_id' not in session:
         flash('Please log in to access this page.')
         return redirect(url_for('login'))
-    
+
     conn = get_db_connection()
-    if conn is not None:
-        cursor = conn.cursor(dictionary=True)  # Use dictionary cursor for easier access to columns by name
-        try:
-            # Fetch user details from the database
-            cursor.execute('SELECT * FROM users WHERE id = %s', (session['user_id'],))
-            user = cursor.fetchone()
+    cursor = conn.cursor(dictionary=True)  # Use dictionary cursor for fetching results as a dictionary
+    cursor.execute('SELECT * FROM users WHERE id = %s', (session['user_id'],))
+    user = cursor.fetchone()
 
-            if not user:
-                flash('User not found.')
-                return redirect(url_for('login'))
+    if request.method == 'POST':
+        college = request.form.get('college', '')
+        phone_number = request.form.get('phone_number', '')
 
-            if request.method == 'POST':
-                college = request.form.get('college', '')
-                phone_number = request.form.get('phone_number', '')
+        # Handle profile photo upload
+        profile_photo = request.files.get('profile_photo')
+        if profile_photo and allowed_file(profile_photo.filename):
+            filename = secure_filename(profile_photo.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            profile_photo.save(file_path)
+            profile_photo_path = filename
+        else:
+            profile_photo_path = user['profile_photo']  # Use existing profile photo if no new one is uploaded
 
-                # Handle profile photo upload
-                profile_photo = request.files.get('profile_photo')
-                if profile_photo and allowed_file(profile_photo.filename):
-                    filename = secure_filename(profile_photo.filename)
-                    profile_photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                    profile_photo_path = filename
-                else:
-                    profile_photo_path = user['profile_photo']  # Keep existing photo if not updated
+        # Update user details in the database
+        cursor.execute('''
+            UPDATE users
+            SET college = %s, phone_number = %s, profile_photo = %s
+            WHERE id = %s
+        ''', (college, phone_number, profile_photo_path, session['user_id']))
+        conn.commit()
+        flash('Profile updated successfully!')
+        return redirect(url_for('profile'))
 
-                # Update user details in the database
-                cursor.execute('''
-                    UPDATE users
-                    SET college = %s, phone_number = %s, profile_photo = %s
-                    WHERE id = %s
-                ''', (college, phone_number, profile_photo_path, session['user_id']))
-                conn.commit()
-                flash('Profile updated successfully!')
-                return redirect(url_for('profile'))
+    cursor.close()
+    conn.close()
+    return render_template('profile.html', user=user)
 
-            return render_template('profile.html', user=user)
-
-        except Exception as e:
-            flash(f'Error: {e}')
-            return redirect(url_for('index'))
-        finally:
-            cursor.close()
-            conn.close()
-    else:
-        flash('Database connection error.')
-        return redirect(url_for('index'))
-
-
+# Route to update only profile photo
 @app.route('/update_profile_photo', methods=['POST'])
 def update_profile_photo():
     if 'user_id' not in session:
         flash('Please log in to access this page.')
         return redirect(url_for('login'))
-    
+
     file = request.files.get('profile_photo')
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+
         conn = get_db_connection()
-        
-        # Check if user details exist for the user, if not, insert them
-        conn.execute('INSERT OR REPLACE INTO user_details (user_id, profile_photo) VALUES (%s, %s)',
-                     (session['user_id'], filename))
+        cursor = conn.cursor()
+        cursor.execute('UPDATE users SET profile_photo = %s WHERE id = %s', (filename, session['user_id']))
         conn.commit()
+        cursor.close()
         conn.close()
+
         flash('Profile photo updated successfully!')
     else:
         flash('Invalid file format or no file uploaded.')
@@ -389,7 +382,6 @@ def update_profile_details():
     college = request.form['college']
     phone_number = request.form['phone_number']
     
-    # Connect to SQLite database and update profile details
     conn = get_db_connection()
     conn.execute('UPDATE users SET college = ?, phone_number = ? WHERE id = ?', (college, phone_number, session['user_id']))
     conn.commit()
@@ -397,6 +389,59 @@ def update_profile_details():
     
     flash('Profile details updated successfully!')
     return redirect(url_for('profile'))
+
+# @app.route('/upload', methods=['POST'])
+# def upload_profile_photo():
+#     if 'profile_photo' in request.files:
+#         file = request.files['profile_photo']
+#         filename = secure_filename(file.filename)
+#         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+#         # Save the filename in the database (example: 'Snapchat-674217206.jpg')
+#         user.profile_photo = filename
+#         db.session.commit()
+#         return redirect(url_for('profile'))
+    
+# @app.route('/update', methods=['POST'])
+# def update_profile_photo():
+#     if 'user_id' not in session:
+#         flash('Please log in to access this page.')
+#         return redirect(url_for('login'))
+    
+#     file = request.files.get('profile_photo')
+#     if file and allowed_file(file.filename):
+#         filename = secure_filename(file.filename)
+#         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        
+#         conn = get_db_connection()
+        
+#         # Check if user details exist for the user, if not, insert them
+#         conn.execute('INSERT OR REPLACE INTO users (user_id, profile_photo) VALUES (%s, %s)',
+#                      (session['user_id'], filename))
+#         conn.commit()
+#         conn.close()
+#         flash('Profile photo updated successfully!')
+#     else:
+#         flash('Invalid file format or no file uploaded.')
+#     return redirect(url_for('profile'))
+
+# @app.route('/update_profile_details', methods=['POST'])
+# def update_profile_details():
+#     if 'user_id' not in session:
+#         flash('Please log in to access this page.')
+#         return redirect(url_for('login'))
+    
+#     college = request.form['college']
+#     phone_number = request.form['phone_number']
+    
+#     # Connect to SQLite database and update profile details
+#     conn = get_db_connection()
+#     conn.execute('UPDATE users SET college = %s, phone_number = %s WHERE id = %s', (college, phone_number, session['user_id']))
+#     conn.commit()
+#     conn.close()
+    
+#     flash('Profile details updated successfully!')
+#     return redirect(url_for('profile'))
+
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
@@ -458,15 +503,17 @@ def signup():
             cursor = conn.cursor()
             try:
                 cursor.execute(
-    'INSERT INTO users (username, email, password) VALUES (%s, %s, %s)',
-    (username, email, hashed_password)
-)
-
+                    'INSERT INTO users (username, email, password) VALUES (%s, %s, %s)',
+                    (username, email, hashed_password)
+                )
                 conn.commit()
                 flash('Signup successful!')
                 return redirect(url_for('login'))
-            except mysql.connector.IntegrityError:
-                flash('Username or email already exists!')
+            except mysql.connector.IntegrityError as e:
+                if "Duplicate entry" in str(e):
+                    flash('Username or email already exists!')
+                else:
+                    flash('An error occurred during signup.')
             finally:
                 cursor.close()
                 conn.close()
