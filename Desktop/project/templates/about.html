@@ -3,160 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us</title>
+    <title>About Us - Automated Tool To Assist Programmers</title>
     <style>
-        /* General styling */
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-        }
-
-        header {
-            background-color: #4CAF50;
-            padding: 10px 20px;
-        }
-
-        header nav ul {
-            list-style-type: none;
+        /* Reset styling */
+        * {
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            box-sizing: border-box;
         }
 
-        header nav ul li {
-            float: left;
-        }
-
-        header nav ul li a {
-            display: block;
-            color: white;
-            text-decoration: none;
-            padding: 10px 15px;
-        }
-
-        header nav ul li a:hover {
-            background-color: #3e8e41;
-        }
-
-        /* Page layout */
-        .about-container {
-            display: flex;
-            flex-wrap: wrap;
-            margin: 20px;
-        }
-
-        /* Left section: Team details */
-        .team-section {
-            flex: 1;
-            padding: 20px;
-        }
-
-        .team-section h2 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        .team-photos {
-            display: flex;
-            gap: 20px;
-        }
-
-        .team-photos img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s;
-        }
-
-        .team-photos img:hover {
-            transform: scale(1.1);
-        }
-
-        .team-names {
-            margin-top: 10px;
-        }
-
-        .team-names p {
-            margin: 5px 0;
-            color: #555;
-            font-weight: bold;
-        }
-
-        /* Right section: About project */
-        .about-project {
-            flex: 1;
-            padding: 20px;
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .about-project h3 {
-            color: #4CAF50;
-            font-size: 24px;
-            margin-bottom: 15px;
-        }
-
-        .about-project p {
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
             color: #333;
             line-height: 1.6;
         }
 
-        footer {
-            text-align: center;
-            padding: 10px 20px;
-            background-color: #4CAF50;
+        /* Header styling */
+        header {
+            background-color: #222;
+            padding: 20px;
             color: white;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        header nav {
+            margin-top: 10px;
+        }
+
+        header nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        header nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 5px 10px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        header nav ul li a:hover {
+            background-color: #444;
+            color: #fff;
+            border-radius: 5px;
+        }
+
+        /* Page layout */
+        .about-section {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background: url('static/images/about-bg.jpg') no-repeat center center/cover;
+        }
+
+        .about-section h2 {
+            font-size: 26px;
+            margin-bottom: 20px;
+            text-align: center;
+            text-transform: uppercase;
+            color: #444;
+        }
+
+        .about-section p {
+            text-align: center;
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        /* Staff section */
+        .staff-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        .staff-card {
+            width: 280px;
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .staff-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .staff-card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            transition: transform 0.3s;
+        }
+
+        .staff-card img:hover {
+            transform: scale(1.1);
+        }
+
+        .staff-card h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
+            color: #444;
+        }
+
+        .staff-card p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* About tool section */
+        .tool-info {
+            margin-top: 40px;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tool-info h3 {
+            font-size: 22px;
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .tool-info p {
+            font-size: 16px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        /* Footer styling */
+        footer {
+            background: #222;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            margin-top: 30px;
+            font-size: 14px;
+        }
+
+        footer p {
+            font-size: 14px;
+        }
+
+        /* Button Style for Call to Action */
+        .cta-button {
+            display: inline-block;
             margin-top: 20px;
+            padding: 12px 25px;
+            background-color: #6a5acd;
+            color: white;
+            font-size: 16px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .cta-button:hover {
+            background-color: #5a4cb1;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .staff-container {
+                flex-direction: column;
+                align-items: center;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
+
+    <!-- Header -->
     <header>
+        <h1>About Automated Tool To Assist Programmers</h1>
         <nav>
             <ul>
-                <li><a href="info.html">Home</a></li>
-                <li><a href="about.html">About</a></li>
-                <li><a href="#">Contact Us</a></li>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- Main Content -->
-    <main>
-        <section class="about-container">
-            <!-- Left Section: Team -->
-            <div class="team-section">
-                <h2>About Automated Tool to Assist Programmer</h2>
-                <p>Our project focuses on enhancing programmers' skills and simplifying their work with tools for debugging, problem-solving, and interactive games.</p>
-                <div class="team-photos">
-                    <img src="static/images/sanath.jpg" alt="Sanath">
-                    <img src="static/images/priyanka_d.jpg" alt="Priyanka D">
-                    <img src="static/images/priyanka_vs.jpg" alt="Priyanka V S">
-                </div>
-                <div class="team-names">
-                    <p>1. Sanath</p>
-                    <p>2. Priyanka D</p>
-                    <p>3. Priyanka V S</p>
-                </div>
+    <!-- About Section -->
+    <div class="about-section">
+        <h2>Our Team</h2>
+        <p>Meet the creative minds behind the Automated Tool to Assist Programmers. We aim to make programming easier and more engaging for everyone.</p>
+
+        <!-- Staff Cards -->
+        <div class="staff-container">
+            <!-- Staff Member 1 -->
+            <div class="staff-card">
+                <img src="static/images/priyanka_d.jpeg" alt="Priyanka D">
+                <h3>Priyanka D</h3>
+                <p>Backend Developer & Project Coordinator</p>
             </div>
 
-            <!-- Right Section: Project Description -->
-            <div class="about-project">
-                <h3>What is Automated Tool To Assist Programmer?</h3>
-                <p>The "Automated Tool to Assist Programmers" is a comprehensive platform designed to support programmers by enhancing code correctness, problem-solving, and skill-building through interactive games.</p>
-                <p>It offers syntax error correction for multiple programming languages, automated question generation, test case validation, and real-time multiplayer games like quizzes and coding challenges, making it a complete solution for programmers of all levels.</p>
+            <!-- Staff Member 2 -->
+            <div class="staff-card">
+                <img src="static/images/priyanka_vs.jpeg" alt="Priyanka V S">
+                <h3>Priyanka V S</h3>
+                <p>Frontend Developer & UI Specialist</p>
             </div>
-        </section>
-    </main>
+
+            <!-- Staff Member 3 -->
+            <div class="staff-card">
+                <img src="static/images/sanath_yergol.jpeg" alt="Sanath Yergol">
+                <h3>Sanath Yergol</h3>
+                <p>Full-Stack Developer & Debugging Expert</p>
+            </div>
+        </div>
+
+        <!-- About Tool Info -->
+        <div class="tool-info">
+            <h3>What is Automated Tool To Assist Programmers?</h3>
+            <p>The "Automated Tool to Assist Programmers" is a comprehensive platform designed to support programmers by enhancing code correctness, problem-solving, and skill-building through interactive games.</p>
+            <p>It offers syntax error correction for multiple programming languages, automated question generation, test case validation, and real-time multiplayer games like quizzes and coding challenges, making it a complete solution for programmers of all levels.</p>
+            <a href="{{ url_for('index') }}" class="cta-button">Get Started</a>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer>
-        &copy; 2024 Automated Tool To Assist Programmer. All rights reserved.
+        <p>&copy; 2024 Automated Tool To Assist Programmers. All rights reserved.</p>
     </footer>
+
 </body>
 </html>

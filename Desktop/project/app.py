@@ -39,8 +39,8 @@ if not os.path.exists(UPLOAD_FOLDER):
 mysql_config = {
     'host': 'localhost',
     'database': 'project_db',
-    'user': 'root',
-    'password': 'Priya@2003'
+    'user': 'priya',
+    'password': 'priyanka@1234'
 }
 
 # Database connection
@@ -282,17 +282,26 @@ def send_email(to_email, subject, message):
         print(f"Failed to send email: {e}")
         flash(f"Failed to send email: {e}")
 
-@app.route('/contact', methods=('GET', 'POST'))
+@app.route('/contact', methods=['GET', 'POST'])
 def contact():
     if request.method == 'POST':
         name = request.form['name']
         email = request.form['email']
         message = request.form['message']
-        
-        # Process contact form (e.g., save to database, send email)
-        flash('Your message has been sent!')
+
+        # Create the email
+        msg = Message('New Contact Form Message',
+                      sender=email,
+                      recipients=['priyankapri425@gmail.com'])
+        msg.body = f"Name: {name}\nEmail: {email}\nMessage:\n{message}"
+
+        # Send the email
+        mail.send(msg)
+
+        flash('Your message has been sent successfully!')
         return redirect(url_for('contact'))
     return render_template('contact.html')
+
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
@@ -508,6 +517,7 @@ def verify_otp():
             return jsonify({'success': False, 'message': 'Database connection error!'})
     else:
         return jsonify({'success': False, 'message': 'Invalid OTP!'})
+    
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -579,8 +589,12 @@ def submit_code():
     code = data['code']
     # Submission logic here
     return jsonify({"message": "Code submitted successfully!"})
+
 @app.route('/question_selector', methods=['GET'])
 def question_selector():
+    if 'user_id' not in session:
+        flash('Please log in to access this page.')
+        return redirect(url_for('login'))
     conn = get_db_connection()
     cursor = conn.cursor()
     topic = request.args.get('topic')

@@ -175,7 +175,7 @@ footer {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
-    border: 1px solid #dddddd00;
+    border: 1px solid #ceb9b982;
     border-radius: 5px;
     box-sizing: border-box;
     color: #333;
@@ -351,9 +351,9 @@ body {
 }
 
 header {
-    background-color: #884f20;
+    background-color: #5050df;
     color: white;
-    padding: 5px 0;
+    padding: 15px 0;
     text-align: center;
 }
 
@@ -384,7 +384,7 @@ table th, table td {
 }
 
 .hero h1 {
-    color: #000;
+    color: #000000;
     font-size: 2.5em;
     margin-bottom: 5px;
 }
